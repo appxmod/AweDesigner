@@ -930,8 +930,8 @@ public abstract class BaseTransientBottomBar<B extends BaseTransientBottomBar<B>
           @SuppressLint("ClickableViewAccessibility")
           @Override
           public boolean onTouch(View v, MotionEvent event) {
-            // Prevent touches from passing through this view.
-            return true;
+            // allow touches to pass through this view.
+            return false;
           }
         };
 

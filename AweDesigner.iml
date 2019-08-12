@@ -149,5 +149,6 @@
     <orderEntry type="library" name="Gradle: androidx.lifecycle:lifecycle-viewmodel:2.2.0-alpha02@aar" level="project" />
     <orderEntry type="library" name="Gradle: androidx.arch.core:core-runtime:2.0.0@aar" level="project" />
     <orderEntry type="module" module-name="AxtAppCompat" />
+    <orderEntry type="module" module-name="AxtAppCompat" />
   </component>
 </module>
