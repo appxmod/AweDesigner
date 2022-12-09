@@ -1,56 +1,31 @@
-apply plugin: 'com.android.library'
-
-
-android {
-
-    defaultConfig {
-        compileSdkVersion ver_compileSdkVersion
-        targetSdkVersion ver_aimsdk
-        minSdkVersion ver_minsdk
-        vectorDrawables.useSupportLibrary = true
-
+buildscript {
+    repositories {
+        mavenLocal()
+        google()
+        jcenter()
+        maven { url 'https://jitpack.io' }
     }
-
-
-
-    buildTypes {
-        debug {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-        }
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-        }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.0.4'
     }
-
-
 }
 
-
-dependencies {
-    if(use_compat_official=='1'){
-        api (libs_compat)
-    }else{
-        implementation  project(':AxtAppCompat')
-        implementation (libs_appres)
-    }
-    api (libs_anno)
-    api (libs_cardview)
-    api (libs_coordinator)
-    api (libs_core)
-    api project(':viewpager')
-    api (libs_fragment){
-        exclude module: "viewpager"
-    }
-    api (libs_lifecycle)
-    //api libs_recycler
-    api project(':AwtRecyclerView')
-    api (libs_transition)
-    api (libs_vectordrawable)
-    api (libs_viewpager2){
-        exclude module: "viewpager"
-        exclude module: "recyclerview"
-    }
-
+ext{
+    //compileSdkVersion = 28
+    //minSdkVersion = 19
+    //targetSdkVersion = 28
 }
+
+allprojects {
+    repositories {
+        mavenLocal()
+        google()
+        jcenter()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+//
+//task clean(type: Delete) {
+//    delete rootProject.buildDir
+//}

@@ -1,0 +1,64 @@
+apply plugin: 'com.android.library'
+
+
+android {
+
+    defaultConfig {
+        compileSdkVersion ver_compileSdkVersion
+        targetSdkVersion ver_aimsdk
+        minSdkVersion ver_minsdk
+        vectorDrawables.useSupportLibrary = true
+
+    }
+
+
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+
+
+}
+
+
+dependencies {
+    api  libs_compat
+    api (libs_anno)
+    api (libs_cardview)
+    api (libs_coordinator)
+    api (libs_viewpager)
+    api (libs_fragment){
+        exclude module: "viewpager"
+    }
+    api (libs_lifecycle)
+    api libs_recycler
+    api libs_recycler
+    api (libs_transition)
+    api (libs_vectordrawable)
+    api (libs_viewpager2){
+        exclude module: "viewpager"
+        exclude module: "recyclerview"
+    }
+}
+
+apply plugin: 'maven-publish'
+afterEvaluate {
+    publishing {
+        publications {
+            mavenAll(MavenPublication) {
+                from components.release
+                groupId "org.appxmod.android"
+                artifactId "Material"
+                version "1.0.0"
+            }
+        }
+    }
+}
+build.finalizedBy publishToMavenLocal
