@@ -39,7 +39,6 @@ dependencies {
     }
     api (libs_lifecycle)
     api libs_recycler
-    api libs_recycler
     api (libs_transition)
     api (libs_vectordrawable)
     api (libs_viewpager2){
