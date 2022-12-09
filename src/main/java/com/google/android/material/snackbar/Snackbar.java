@@ -291,10 +291,22 @@ public class Snackbar extends BaseTransientBottomBar<Snackbar> {
           new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+              view.setTag(null);
               listener.onClick(view);
               // Now dismiss the Snackbar
               dispatchDismiss(BaseCallback.DISMISS_EVENT_ACTION);
             }
+          });
+      tv.setOnLongClickListener(
+          new View.OnLongClickListener() {
+              @Override
+              public boolean onLongClick(View view) {
+                  view.setTag(false);
+                  listener.onClick(view);
+                  // Now dismiss the Snackbar
+                  dispatchDismiss(BaseCallback.DISMISS_EVENT_ACTION);
+                  return false;
+              }
           });
     }
     return this;

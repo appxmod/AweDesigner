@@ -40,7 +40,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 /** Base class for {@link android.app.Dialog}s styled as a bottom sheet. */
 public class BottomSheetDialog extends AppCompatDialog {
-
+  public Object tag;
   private BottomSheetBehavior<FrameLayout> behavior;
 
   boolean cancelable = true;
@@ -56,6 +56,7 @@ public class BottomSheetDialog extends AppCompatDialog {
     // We hide the title bar for any style configuration. Otherwise, there will be a gap
     // above the bottom sheet when it is expanded.
     supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+
   }
 
   protected BottomSheetDialog(
@@ -77,7 +78,7 @@ public class BottomSheetDialog extends AppCompatDialog {
     if (window != null) {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        //window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
       }
       window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     }

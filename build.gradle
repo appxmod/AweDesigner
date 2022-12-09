@@ -4,7 +4,7 @@ apply plugin: 'com.android.library'
 android {
 
     defaultConfig {
-        compileSdkVersion ver_compileSdkVersion as int
+        compileSdkVersion ver_compileSdkVersion
         targetSdkVersion ver_aimsdk
         minSdkVersion ver_minsdk
         vectorDrawables.useSupportLibrary = true
@@ -39,11 +39,18 @@ dependencies {
     api (libs_cardview)
     api (libs_coordinator)
     api (libs_core)
-    api (libs_fragment)//api 'androidx.fragment:fragment:1.0.0'
+    api project(':viewpager')
+    api (libs_fragment){
+        exclude module: "viewpager"
+    }
     api (libs_lifecycle)
-    api (libs_recycler)
+    //api libs_recycler
+    api project(':AwtRecyclerView')
     api (libs_transition)
     api (libs_vectordrawable)
-    api (libs_viewpager2)
+    api (libs_viewpager2){
+        exclude module: "viewpager"
+        exclude module: "recyclerview"
+    }
 
 }

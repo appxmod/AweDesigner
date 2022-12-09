@@ -1123,12 +1123,22 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
     }
   }
 
+  public interface AreYouNotFeiWuListener{
+      boolean AreYouNotFeiWu();
+  }
+  AreYouNotFeiWuListener anfwl;
+
+  public void setAreYouNotFeiWuListener(AreYouNotFeiWuListener _anfwl){
+      anfwl=_anfwl;
+  }
+
   private final ViewDragHelper.Callback dragCallback =
       new ViewDragHelper.Callback() {
 
         @Override
         public boolean tryCaptureView(@NonNull View child, int pointerId) {
-          if(true) return false;
+          if(anfwl==null || !anfwl.AreYouNotFeiWu()) //yes, you are a fei_wu
+              return false;//here , modified to disallow expansion.
           if (state == STATE_DRAGGING) {
             return false;
           }

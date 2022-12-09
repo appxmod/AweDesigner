@@ -1548,6 +1548,7 @@ public class AppBarLayout extends LinearLayout {
 
     @Override
     boolean canDragView(T view) {
+      if(true) return false;
       if (onDragCallback != null) {
         // If there is a drag callback set, it's in control
         return onDragCallback.canDrag(view);
