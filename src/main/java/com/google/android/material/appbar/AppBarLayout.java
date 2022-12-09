@@ -44,6 +44,9 @@ import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.material.shape.MaterialShapeDrawable;
 import com.google.android.material.shape.MaterialShapeUtils;
+
+import androidx.appcompat.app.CMN;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.math.MathUtils;
 import androidx.core.util.ObjectsCompat;
@@ -56,11 +59,13 @@ import androidx.appcompat.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.animation.Interpolator;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+
 import com.google.android.material.animation.AnimationUtils;
 import com.google.android.material.internal.ThemeEnforcement;
 import java.lang.annotation.Retention;
@@ -130,8 +135,8 @@ public class AppBarLayout extends LinearLayout {
   static final int PENDING_ACTION_COLLAPSED = 1 << 1;
   static final int PENDING_ACTION_ANIMATE_ENABLED = 1 << 2;
   static final int PENDING_ACTION_FORCE = 1 << 3;
-
-  /**
+	
+	/**
    * Interface definition for a callback to be invoked when an {@link AppBarLayout}'s vertical
    * offset changes.
    */
@@ -159,7 +164,45 @@ public class AppBarLayout extends LinearLayout {
   }
 
   private static final int INVALID_SCROLL_RANGE = -1;
-
+  
+	public final  ArrayList<StretchView> stretchBars = new ArrayList<>();
+	
+	public boolean strechNoBotom;
+	
+	/** 0=stretch bottombar  1=stretch panel   2=move bottombar*/
+	public void addStretchView(View view, BarSz barSz, int type) {
+		for (int i = 0; i < stretchBars.size(); i++) {
+			if (stretchBars.get(i).view==view) {
+				return;
+			}
+		}
+		stretchBars.add(new StretchView(view, barSz, type));
+	}
+	public void removeStretchView(View view) {
+		for (int i = 0; i < stretchBars.size(); i++) {
+			if (stretchBars.get(i).view==view) {
+				stretchBars.remove(i);
+				return;
+			}
+		}
+	}
+	public void resetStretchViews() {
+		for(StretchView strech : stretchBars) {
+			BarSz barSz = strech.barSz;
+			if (barSz != null) {
+				float h = barSz.sz;
+				if (strech.type==1) {
+					strech.view.setPadding(0, 0, 0, 0);
+				} else if (strech.type==0){
+					strech.view.getLayoutParams().height = (int)h;
+					strech.view.requestLayout();
+				} else if (strech.type==2){
+					strech.view.setTranslationY(0);
+				}
+			}
+		}
+	}
+	
   private int currentOffset;
   private int totalScrollRange = INVALID_SCROLL_RANGE;
   private int downPreScrollRange = INVALID_SCROLL_RANGE;
@@ -1165,7 +1208,21 @@ public class AppBarLayout extends LinearLayout {
           && (scrollFlags & COLLAPSIBLE_FLAGS) != 0;
     }
   }
-
+	
+	public static class BarSz {
+		public int sz;
+		public int minSz;
+	}
+	public static class StretchView {
+		public View view;
+		public BarSz barSz;
+		public int type;
+		public StretchView(View view, BarSz barSz, int type) {
+			this.view = view;
+			this.barSz = barSz;
+			this.type = type;
+		}
+	}
   /**
    * The default {@link Behavior} for {@link AppBarLayout}. Implements the necessary nested scroll
    * handling with offsetting.
@@ -1324,7 +1381,6 @@ public class AppBarLayout extends LinearLayout {
           abl.setLiftedState(abl.shouldLift(target));
         }
       }
-
       // Keep a reference to the previous nested scrolling child
       lastNestedScrollingChildRef = new WeakReference<>(target);
     }
@@ -1745,12 +1801,12 @@ public class AppBarLayout extends LinearLayout {
       final List<View> dependencies = parent.getDependents(layout);
       for (int i = 0, size = dependencies.size(); i < size; i++) {
         final View dependency = dependencies.get(i);
-        final CoordinatorLayout.LayoutParams lp =
-            (CoordinatorLayout.LayoutParams) dependency.getLayoutParams();
-        final CoordinatorLayout.Behavior behavior = lp.getBehavior();
-
-        if (behavior instanceof ScrollingViewBehavior) {
-          return ((ScrollingViewBehavior) behavior).getOverlayTop() != 0;
+        final ViewGroup.LayoutParams lp = dependency.getLayoutParams();
+        if (lp instanceof CoordinatorLayout.LayoutParams) {
+        	final CoordinatorLayout.Behavior behavior = ((CoordinatorLayout.LayoutParams) lp).getBehavior();
+        	if (behavior instanceof ScrollingViewBehavior) {
+        		return ((ScrollingViewBehavior) behavior).getOverlayTop() != 0;
+        	}
         }
       }
       return false;
@@ -1873,12 +1929,13 @@ public class AppBarLayout extends LinearLayout {
    * scrolling to automatically scroll any {@link AppBarLayout} siblings.
    */
   public static class ScrollingViewBehavior extends HeaderScrollingViewBehavior {
-
-    public ScrollingViewBehavior() {}
+	  public boolean strech;
+    public ScrollingViewBehavior() {
+	}
 
     public ScrollingViewBehavior(Context context, AttributeSet attrs) {
       super(context, attrs);
-
+		strech = true;
       final TypedArray a =
           context.obtainStyledAttributes(attrs, R.styleable.ScrollingViewBehavior_Layout);
       setOverlayTop(
@@ -1894,8 +1951,40 @@ public class AppBarLayout extends LinearLayout {
 
     @Override
     public boolean onDependentViewChanged(CoordinatorLayout parent, View child, View dependency) {
-      offsetChildAsNeeded(child, dependency);
-      updateLiftedStateIfNeeded(child, dependency);
+		if (child!=null) {
+			offsetChildAsNeeded(child, dependency);
+			updateLiftedStateIfNeeded(child, dependency);
+		}
+	  if(strech) {
+		  AppBarLayout appBar = (AppBarLayout) dependency;
+		  BarSz barSz;
+		  final int top = Math.abs(dependency.getTop());
+		  final int dh = dependency.getHeight();
+		  final float amount = top*1.0f / dh;
+		  for(StretchView strech : appBar.stretchBars) {
+			  if(strech.view.getVisibility()!=View.VISIBLE || strech.view.getParent()==null)
+				  continue;
+			  //CMN.Log("strech::", strech.view, strech.type);
+			  barSz = strech.barSz;
+			  if (barSz != null) {
+				  float h = (1 - amount) * barSz.sz + amount * barSz.minSz;
+				  if(appBar.strechNoBotom) h=0;
+				  if (strech.type==1) {
+					  if(!GlobalOptions.bStretching)
+						  GlobalOptions.bStretching = true;
+					  strech.view.setPadding(0, 0, 0, (int) h + dh - top);
+//					  View view = (View) strech.view.getParent();
+//					  ((MarginLayoutParams)view.getLayoutParams()).bottomMargin = (int) h + dh - top;
+//					  view.requestLayout();
+				  } else if (strech.type==0){
+					  strech.view.getLayoutParams().height = (int)h;
+					  strech.view.requestLayout();
+				  } else if (strech.type==2){
+					  strech.view.setTranslationY(barSz.sz-h);
+				  }
+			  }
+		  }
+	  }
       return false;
     }
 
@@ -1996,4 +2085,18 @@ public class AppBarLayout extends LinearLayout {
       }
     }
   }
+	
+	public void resetAppBarLayoutOffset() {
+		ViewGroup.LayoutParams lp = getLayoutParams();
+		
+		if (lp instanceof CoordinatorLayout.LayoutParams) {
+			final CoordinatorLayout.Behavior behavior = ((CoordinatorLayout.LayoutParams) lp).getBehavior();
+			
+			if (behavior instanceof BaseBehavior) {
+				((BaseBehavior) behavior).setTopAndBottomOffset(getHeight());
+			}
+		}
+	}
+	
+	
 }
